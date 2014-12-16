@@ -17,21 +17,24 @@
  */
 package ignore;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import junit.framework.TestCase;
+
+import org.jvnet.fastinfoset.sax.helpers.FastInfosetDefaultHandler;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
 import com.sun.xml.fastinfoset.dom.DOMDocumentSerializer;
 import com.sun.xml.fastinfoset.org.apache.xerces.util.XMLChar;
 import com.sun.xml.fastinfoset.sax.AttributesHolder;
 import com.sun.xml.fastinfoset.sax.SAXDocumentParser;
 import com.sun.xml.fastinfoset.sax.SAXDocumentSerializer;
-import com.sun.xml.fastinfoset.stax.StAXDocumentSerializer;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import junit.framework.TestCase;
-import org.jvnet.fastinfoset.sax.helpers.FastInfosetDefaultHandler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -76,53 +79,6 @@ public class IgnoreTest extends TestCase {
 
         ss.endElement("", "root", "root");
         ss.endDocument();
-        
-        parse(baos, ignore);
-    }
-    
-    public void testIgnoreStAXSerialization() throws Exception {
-        _testIgnoreStAXSerialization(true);
-    }
-    
-    public void testDoNotIgnoreStAXSerialization() throws Exception {
-        _testIgnoreStAXSerialization(false);
-    }
-    
-    public void _testIgnoreStAXSerialization(boolean ignore) throws Exception {
-        StAXDocumentSerializer ss = new StAXDocumentSerializer();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ss.setOutputStream(baos);
-        
-        ss.setIgnoreComments(ignore);
-        ss.setIgnoreProcesingInstructions(ignore);        
-        ss.setIgnoreWhiteSpaceTextContent(ignore);
-        
-        ss.writeStartDocument();
-
-        ss.writeStartElement("root");
-        
-        ss.writeStartElement("e");
-        ss.writeComment("comment");
-        ss.writeProcessingInstruction("target", "data");
-        String ws = "    ";
-        ss.writeCharacters(ws);
-        ss.writeEndElement();
-        
-        ss.writeStartElement("e");
-        ss.writeCharacters(ws.toCharArray(), 0, ws.length());
-        ss.writeEndElement();
-        
-        ss.writeStartElement("e");
-        ss.writeCharacters(_notws);
-        ss.writeEndElement();
-
-        ss.writeStartElement("e");
-        ss.writeCharacters(_notws.toCharArray(), 0, _notws.length());
-        ss.writeEndElement();
-        
-        ss.writeEndElement();
-        ss.writeEndDocument();
-        ss.close();
         
         parse(baos, ignore);
     }

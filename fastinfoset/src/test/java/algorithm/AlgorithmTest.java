@@ -17,39 +17,34 @@
  */
 package algorithm;
 
-import com.sun.xml.fastinfoset.QualifiedName;
-import com.sun.xml.fastinfoset.algorithm.BASE64EncodingAlgorithm;
-import com.sun.xml.fastinfoset.algorithm.DoubleEncodingAlgorithm;
-import com.sun.xml.fastinfoset.algorithm.FloatEncodingAlgorithm;
-import com.sun.xml.fastinfoset.algorithm.IntEncodingAlgorithm;
-import com.sun.xml.fastinfoset.algorithm.LongEncodingAlgorithm;
-import com.sun.xml.fastinfoset.algorithm.ShortEncodingAlgorithm;
-import com.sun.xml.fastinfoset.algorithm.BooleanEncodingAlgorithm;
-import com.sun.xml.fastinfoset.dom.DOMDocumentParser;
-import com.sun.xml.fastinfoset.sax.AttributesHolder;
-import com.sun.xml.fastinfoset.sax.SAXDocumentParser;
-import com.sun.xml.fastinfoset.sax.SAXDocumentSerializer;
-import com.sun.xml.fastinfoset.stax.StAXDocumentParser;
-import com.sun.xml.fastinfoset.stax.StAXDocumentSerializer;
-import com.sun.xml.fastinfoset.vocab.ParserVocabulary;
-import com.sun.xml.fastinfoset.vocab.SerializerVocabulary;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.stream.XMLStreamReader;
-import junit.framework.*;
+
+import junit.framework.TestCase;
+
 import org.jvnet.fastinfoset.EncodingAlgorithmIndexes;
 import org.jvnet.fastinfoset.FastInfosetParser;
 import org.jvnet.fastinfoset.sax.EncodingAlgorithmAttributes;
 import org.jvnet.fastinfoset.sax.helpers.FastInfosetDefaultHandler;
-import org.w3c.dom.Document;
-import org.w3c.dom.Text;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
+import com.sun.xml.fastinfoset.QualifiedName;
+import com.sun.xml.fastinfoset.algorithm.BASE64EncodingAlgorithm;
+import com.sun.xml.fastinfoset.algorithm.BooleanEncodingAlgorithm;
+import com.sun.xml.fastinfoset.algorithm.DoubleEncodingAlgorithm;
+import com.sun.xml.fastinfoset.algorithm.FloatEncodingAlgorithm;
+import com.sun.xml.fastinfoset.algorithm.IntEncodingAlgorithm;
+import com.sun.xml.fastinfoset.algorithm.LongEncodingAlgorithm;
+import com.sun.xml.fastinfoset.algorithm.ShortEncodingAlgorithm;
+import com.sun.xml.fastinfoset.sax.AttributesHolder;
+import com.sun.xml.fastinfoset.sax.SAXDocumentParser;
+import com.sun.xml.fastinfoset.sax.SAXDocumentSerializer;
+import com.sun.xml.fastinfoset.vocab.ParserVocabulary;
+import com.sun.xml.fastinfoset.vocab.SerializerVocabulary;
 
 public class AlgorithmTest extends TestCase {
     protected static final int ARRAY_SIZE = 8;
@@ -869,79 +864,5 @@ public class AlgorithmTest extends TestCase {
             if (j % 2 == 0)
                _booleanArray[i] = true;
         }
-    }
-
-    public void testStAXBase64EncodingAlgorithm() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StAXDocumentSerializer ds = new StAXDocumentSerializer(baos);
-
-        byte[] data = new byte[256];
-        for (int i = 0; i < 256; i++) {
-            data[i] = (byte)i;
-        }
-
-        ds.writeStartDocument();
-            ds.writeStartElement("element");
-                ds.writeOctets(data, 0, data.length);
-            ds.writeEndElement();
-        ds.writeEndDocument();
-        ds.close();
-
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        StAXDocumentParser dp = new StAXDocumentParser(bais);
-        while(dp.hasNext()) {
-            int e = dp.next();
-            if (e == XMLStreamReader.CHARACTERS) {
-                byte[] b = dp.getTextAlgorithmBytes();
-                assertEquals(EncodingAlgorithmIndexes.BASE64, dp.getTextAlgorithmIndex());
-                assertTrue(b != null);
-                assertEquals(data.length, dp.getTextAlgorithmLength());
-                for (int i = 0; i < data.length; i++) {
-                    assertEquals(data[i], b[dp.getTextAlgorithmStart() + i]);
-                }
-
-                b = dp.getTextAlgorithmBytesClone();
-                assertTrue(b != null);
-                assertEquals(data.length, b.length);
-                for (int i = 0; i < data.length; i++) {
-                    assertEquals(data[i], b[i]);
-                }
-
-                String c = dp.getText();
-                assertEquals(_base64String.length(), c.length());
-                assertEquals(_base64String, c);
-            }
-        }
-    }
-
-    public void testDOMBase64EncodingAlgorithm() throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        StAXDocumentSerializer ds = new StAXDocumentSerializer(baos);
-
-        byte[] data = new byte[256];
-        for (int i = 0; i < 256; i++) {
-            data[i] = (byte)i;
-        }
-
-        ds.writeStartDocument();
-            ds.writeStartElement("element");
-                ds.writeOctets(data, 0, data.length);
-            ds.writeEndElement();
-        ds.writeEndDocument();
-        ds.close();
-
-
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        DOMDocumentParser dp = new DOMDocumentParser();
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        dbf.setNamespaceAware(true);
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document d = db.newDocument();
-        dp.parse(d, bais);
-
-        Text t = (Text)d.getFirstChild().getFirstChild();
-        String c = t.getNodeValue();
-        assertEquals(_base64String.length(), c.length());
-        assertEquals(_base64String, c);
     }
 }
